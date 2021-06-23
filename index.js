@@ -53,7 +53,7 @@ async function getServicesConfigFilePath() {
     await fs.mkdirs(configFilePath);
   }
 
-  return `${configFilePath}/services-config.json`;
+  return `${configFilePath}services-config.json`;
 }
 
 run();
