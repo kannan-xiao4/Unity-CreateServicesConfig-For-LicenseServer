@@ -23,14 +23,13 @@ async function run() {
       clientUpdateLicenseTimeoutSec: clientUpdateLicenseTimeoutSec,
       useLsd: useLsd,
     };
-    const json = JSON.stringify(data);
-    core.info(json);
+    core.info(data);
     const fullPath = await getServicesConfigFilePath();
     core.info(fullPath);
 
-    await fs.outputJson(fullPath, json);
+    await fs.outputJson(fullPath, data);
 
-    core.setOutput('servicesConfig', json);
+    core.setOutput('servicesConfig', data);
     core.setOutput('configLocation', fullPath);
 
   } catch (error) {
@@ -45,7 +44,7 @@ async function getServicesConfigFilePath() {
   } else if (process.platform === 'darwin') {
     configFilePath = '/Library/Application Support/Unity/config/';
   } else if (process.platform === 'win32') {
-    configFilePath = '%PROGRAMDATA%/Unity/config/';
+    configFilePath = 'C:/ProgramData/Unity/config/';
   }
   else throw new Error('Unknown plarform');
 
