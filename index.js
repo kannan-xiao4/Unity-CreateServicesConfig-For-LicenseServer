@@ -1,6 +1,6 @@
 const core = require('@actions/core');
 const wait = require('./wait');
-const fs = require('fs');
+const fs = require('fs-extra');
 const fetch = require('node-fetch');
 
 // most @actions toolkit packages have async methods
@@ -56,7 +56,7 @@ async function getServicesConfigFilePath() {
   else throw new Error('Unknown plarform');
 
   if (!fs.existsSync(configFilePath)) {
-    fs.mkdirSync(configFilePath);
+    fs.mkdirsSync(configFilePath);
   }
 
   return configFilePath;
