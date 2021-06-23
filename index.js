@@ -59,7 +59,7 @@ async function getServicesConfigFilePath() {
     fs.mkdirsSync(configFilePath);
   }
 
-  return configFilePath;
+  return `${configFilePath}/services-config.json`;
 }
 
 run();
