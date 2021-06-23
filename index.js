@@ -30,9 +30,9 @@ async function run() {
       useLsd: useLsd,
     };
     const json = JSON.stringify(data);
-    core.debug(json); // debug is only output if you set the secret `ACTIONS_RUNNER_DEBUG` to true
-
+    core.info(json);
     const fullPath = await getServicesConfigFilePath();
+    core.info(fullPath);
 
     fs.writeFile(fullPath, json);
 
