@@ -3,26 +3,68 @@ require('./sourcemap-register.js');module.exports =
 /******/ 	var __webpack_modules__ = ({
 
 /***/ 932:
-/***/ ((__unused_webpack_module, __unused_webpack_exports, __webpack_require__) => {
+/***/ ((__unused_webpack_module, __unused_webpack_exports, __nccwpck_require__) => {
 
-const core = __webpack_require__(186);
-const wait = __webpack_require__(258);
-
+const core = __nccwpck_require__(186);
+const fs = __nccwpck_require__(747);
 
 // most @actions toolkit packages have async methods
 async function run() {
   try {
-    const ms = core.getInput('milliseconds');
-    core.info(`Waiting ${ms} milliseconds ...`);
+    const licensingServiceBaseUrl = core.getInput('licensingServiceBaseUrl');
+    const enableEntitlementLicensing = core.getInput('enableEntitlementLicensing');
+    const enableFloatingApi = core.getInput('enableFloatingApi');
+    const clientConnectTimeoutSec = core.getInput('clientConnectTimeoutSec');
+    const clientHandshakeTimeoutSec = core.getInput('clientHandshakeTimeoutSec');
+    const clientResolveEntitlementsTimeoutSec = core.getInput('clientResolveEntitlementsTimeoutSec');
+    const clientUpdateLicenseTimeoutSec = core.getInput('clientUpdateLicenseTimeoutSec');
+    const useLsd = core.getInput('useLsd');
 
-    core.debug((new Date()).toTimeString()); // debug is only output if you set the secret `ACTIONS_RUNNER_DEBUG` to true
-    await wait(parseInt(ms));
-    core.info((new Date()).toTimeString());
+    // check server is running.
+    const createResponse = await fetch(`${licensingServiceBaseUrl}/v1/status`, { method: 'GET' });
+    const resJson = await createResponse.json();
+    core.info(resJson);
 
-    core.setOutput('time', new Date().toTimeString());
+    const data = {
+      licensingServiceBaseUrl: licensingServiceBaseUrl,
+      enableEntitlementLicensing: enableEntitlementLicensing,
+      enableFloatingApi: enableFloatingApi,
+      clientConnectTimeoutSec: clientConnectTimeoutSec,
+      clientHandshakeTimeoutSec: clientHandshakeTimeoutSec,
+      clientResolveEntitlementsTimeoutSec: clientResolveEntitlementsTimeoutSec,
+      clientUpdateLicenseTimeoutSec: clientUpdateLicenseTimeoutSec,
+      useLsd: useLsd,
+    };
+    const json = JSON.stringify(data);
+    core.debug(json); // debug is only output if you set the secret `ACTIONS_RUNNER_DEBUG` to true
+
+    const fullPath = await getServicesConfigFilePath();
+
+    fs.writeFile(fullPath, json);
+
+    core.setOutput('servicesConfig', json);
+    core.setOutput('configLocation', fullPath);
   } catch (error) {
     core.setFailed(error.message);
   }
+}
+
+async function getServicesConfigFilePath() {
+  let configFilePath = '';
+  if (process.platform === 'linux') {
+    configFilePath = '/usr/share/unity3d/config/';
+  } else if (process.platform === 'darwin') {
+    configFilePath = '/Library/Application Support/Unity/config/';
+  } else if (process.platform === 'win32') {
+    configFilePath = '%PROGRAMDATA%/Unity/config/';
+  }
+  else throw new Error('Unknown plarform');
+
+  if (!fs.existsSync(configFilePath)) {
+    fs.mkdirSync(configFilePath);
+  }
+
+  return configFilePath;
 }
 
 run();
@@ -31,7 +73,7 @@ run();
 /***/ }),
 
 /***/ 351:
-/***/ (function(__unused_webpack_module, exports, __webpack_require__) {
+/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
 
 "use strict";
 
@@ -43,8 +85,8 @@ var __importStar = (this && this.__importStar) || function (mod) {
     return result;
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-const os = __importStar(__webpack_require__(87));
-const utils_1 = __webpack_require__(278);
+const os = __importStar(__nccwpck_require__(87));
+const utils_1 = __nccwpck_require__(278);
 /**
  * Commands
  *
@@ -117,7 +159,7 @@ function escapeProperty(s) {
 /***/ }),
 
 /***/ 186:
-/***/ (function(__unused_webpack_module, exports, __webpack_require__) {
+/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
 
 "use strict";
 
@@ -138,11 +180,11 @@ var __importStar = (this && this.__importStar) || function (mod) {
     return result;
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-const command_1 = __webpack_require__(351);
-const file_command_1 = __webpack_require__(717);
-const utils_1 = __webpack_require__(278);
-const os = __importStar(__webpack_require__(87));
-const path = __importStar(__webpack_require__(622));
+const command_1 = __nccwpck_require__(351);
+const file_command_1 = __nccwpck_require__(717);
+const utils_1 = __nccwpck_require__(278);
+const os = __importStar(__nccwpck_require__(87));
+const path = __importStar(__nccwpck_require__(622));
 /**
  * The code to exit an action
  */
@@ -362,7 +404,7 @@ exports.getState = getState;
 /***/ }),
 
 /***/ 717:
-/***/ (function(__unused_webpack_module, exports, __webpack_require__) {
+/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
 
 "use strict";
 
@@ -377,9 +419,9 @@ var __importStar = (this && this.__importStar) || function (mod) {
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 // We use any as a valid input type
 /* eslint-disable @typescript-eslint/no-explicit-any */
-const fs = __importStar(__webpack_require__(747));
-const os = __importStar(__webpack_require__(87));
-const utils_1 = __webpack_require__(278);
+const fs = __importStar(__nccwpck_require__(747));
+const os = __importStar(__nccwpck_require__(87));
+const utils_1 = __nccwpck_require__(278);
 function issueCommand(command, message) {
     const filePath = process.env[`GITHUB_${command}`];
     if (!filePath) {
@@ -423,23 +465,6 @@ exports.toCommandValue = toCommandValue;
 
 /***/ }),
 
-/***/ 258:
-/***/ ((module) => {
-
-let wait = function (milliseconds) {
-  return new Promise((resolve) => {
-    if (typeof milliseconds !== 'number') {
-      throw new Error('milliseconds not a number');
-    }
-    setTimeout(() => resolve("done!"), milliseconds)
-  });
-};
-
-module.exports = wait;
-
-
-/***/ }),
-
 /***/ 747:
 /***/ ((module) => {
 
@@ -470,7 +495,7 @@ module.exports = require("path");;
 /******/ 	var __webpack_module_cache__ = {};
 /******/ 	
 /******/ 	// The require function
-/******/ 	function __webpack_require__(moduleId) {
+/******/ 	function __nccwpck_require__(moduleId) {
 /******/ 		// Check if module is in cache
 /******/ 		if(__webpack_module_cache__[moduleId]) {
 /******/ 			return __webpack_module_cache__[moduleId].exports;
@@ -485,7 +510,7 @@ module.exports = require("path");;
 /******/ 		// Execute the module function
 /******/ 		var threw = true;
 /******/ 		try {
-/******/ 			__webpack_modules__[moduleId].call(module.exports, module, module.exports, __webpack_require__);
+/******/ 			__webpack_modules__[moduleId].call(module.exports, module, module.exports, __nccwpck_require__);
 /******/ 			threw = false;
 /******/ 		} finally {
 /******/ 			if(threw) delete __webpack_module_cache__[moduleId];
@@ -498,11 +523,11 @@ module.exports = require("path");;
 /************************************************************************/
 /******/ 	/* webpack/runtime/compat */
 /******/ 	
-/******/ 	__webpack_require__.ab = __dirname + "/";/************************************************************************/
+/******/ 	__nccwpck_require__.ab = __dirname + "/";/************************************************************************/
 /******/ 	// module exports must be returned from runtime so entry inlining is disabled
 /******/ 	// startup
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(932);
+/******/ 	return __nccwpck_require__(932);
 /******/ })()
 ;
 //# sourceMappingURL=index.js.map
