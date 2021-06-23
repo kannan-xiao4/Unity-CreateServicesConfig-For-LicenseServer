@@ -1,7 +1,5 @@
 const core = require('@actions/core');
-const wait = require('./wait');
 const fs = require('fs-extra');
-const fetch = require('node-fetch');
 
 // most @actions toolkit packages have async methods
 async function run() {
@@ -14,10 +12,6 @@ async function run() {
     const clientResolveEntitlementsTimeoutSec = core.getInput('clientResolveEntitlementsTimeoutSec');
     const clientUpdateLicenseTimeoutSec = core.getInput('clientUpdateLicenseTimeoutSec');
     const useLsd = core.getInput('useLsd');
-
-    const createResponse = await fetch(`${licensingServiceBaseUrl}/v1/status`, { method: 'GET' });
-    const resJson = await createResponse.json();
-    core.info(resJson);
 
     const data = {
       licensingServiceBaseUrl: licensingServiceBaseUrl,
@@ -34,7 +28,7 @@ async function run() {
     const fullPath = await getServicesConfigFilePath();
     core.info(fullPath);
 
-    fs.writeFile(fullPath, json);
+    await fs.outputJson(fullPath, json);
 
     core.setOutput('servicesConfig', json);
     core.setOutput('configLocation', fullPath);
@@ -55,8 +49,9 @@ async function getServicesConfigFilePath() {
   }
   else throw new Error('Unknown plarform');
 
-  if (!fs.existsSync(configFilePath)) {
-    fs.mkdirsSync(configFilePath);
+  const exist = await fs.pathExists(configFilePath);
+  if (!exist) {
+    await fs.mkdirs(configFilePath);
   }
 
   return `${configFilePath}/services-config.json`;
