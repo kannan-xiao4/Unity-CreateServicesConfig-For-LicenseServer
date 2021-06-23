@@ -9,7 +9,7 @@ branding:
 inputs:
   licensingServiceBaseUrl:
     description: 'Network address of floating license server. Unity Client connects to different endpoints on this address to obtain a lease and a license file'
-    default: 'http://127.0.0.1:8080/'
+    default: 'http://127.0.0.1:8080'
     required: true
   enableEntitlementLicensing:
     description: 'Enables entitlement licensing.'
