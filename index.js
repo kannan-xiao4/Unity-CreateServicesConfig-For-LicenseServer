@@ -1,6 +1,7 @@
 const core = require('@actions/core');
 const wait = require('./wait');
 const fs = require('fs');
+const fetch = require('node-fetch');
 
 // most @actions toolkit packages have async methods
 async function run() {
